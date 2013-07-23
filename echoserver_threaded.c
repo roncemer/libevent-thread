@@ -28,6 +28,9 @@
 #define SERVER_PORT 5555
 /* Connection backlog (# of backlogged connections to accept). */
 #define CONNECTION_BACKLOG 8
+/* Socket read and write timeouts, in seconds. */
+#define SOCKET_READ_TIMEOUT_SECONDS 10
+#define SOCKET_WRITE_TIMEOUT_SECONDS 10
 /* Number of worker threads.  Should match number of CPU cores reported in /proc/cpuinfo. */
 #define NUM_THREADS 8
 
@@ -121,18 +124,16 @@ void buffered_on_read(struct bufferevent *bev, void *arg) {
 	char data[4096];
 	int nbytes;
 
-	/* If we have input data, the number of bytes we have is contained in bev->input->off.
-	 * Copy the data from the input buffer to the output buffer in 4096-byte chunks.
+	/* Copy the data from the input buffer to the output buffer in 4096-byte chunks.
 	 * There is a one-liner to do the whole thing in one shot, but the purpose of this server
 	 * is to show actual real-world reading and writing of the input and output buffers,
 	 * so we won't take that shortcut here. */
-	while (bev->input->off > 0) {
+	while ((nbytes = EVBUFFER_LENGTH(bev->input)) > 0) {
 		/* Remove a chunk of data from the input buffer, copying it into our local array (data). */
-		nbytes = (bev->input->off > 4096) ? 4096 : bev->input->off;
+		if (nbytes > 4096) nbytes = 4096;
 		evbuffer_remove(bev->input, data, nbytes); 
 		/* Add the chunk of data from our local array (data) to the client's output buffer. */
 		evbuffer_add(client->output_buffer, data, nbytes);
-
 	}
 
 	/* Send the results to the client.  This actually only queues the results for sending.
@@ -244,6 +245,8 @@ void on_accept(int fd, short ev, void *arg) {
 		return;
 	}
 	bufferevent_base_set(client->evbase, client->buf_ev);
+
+	bufferevent_settimeout(client->buf_ev, SOCKET_READ_TIMEOUT_SECONDS, SOCKET_WRITE_TIMEOUT_SECONDS);
 
 	/* We have to enable it before our callbacks will be
 	 * called. */
