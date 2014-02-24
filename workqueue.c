@@ -31,16 +31,20 @@ static void *worker_function(void *ptr) {
 		/* Wait until we get notified. */
 		pthread_mutex_lock(&worker->workqueue->jobs_mutex);
 		while (worker->workqueue->waiting_jobs == NULL) {
+			/* If we're supposed to terminate, break out of our continuous loop. */
+			if (worker->terminate) break;
+
 			pthread_cond_wait(&worker->workqueue->jobs_cond, &worker->workqueue->jobs_mutex);
 		}
+
+		/* If we're supposed to terminate, break out of our continuous loop. */
+		if (worker->terminate) break;
+
 		job = worker->workqueue->waiting_jobs;
 		if (job != NULL) {
 			LL_REMOVE(job, worker->workqueue->waiting_jobs);
 		}
 		pthread_mutex_unlock(&worker->workqueue->jobs_mutex);
-
-		/* If we're supposed to terminate, break out of our continuous loop. */
-		if (worker->terminate) break;
 
 		/* If we didn't get a job, then there's nothing to do at this time. */
 		if (job == NULL) continue;
