@@ -1,6 +1,6 @@
 /**
  * Multithreaded work queue.
- * Copyright (c) 2012 Ronald Bennett Cemer
+ * Copyright (c) 2012-2015 Ronald Bennett Cemer
  * This software is licensed under the BSD license.
  * See the accompanying LICENSE.txt for details.
  */
@@ -38,7 +38,10 @@ static void *worker_function(void *ptr) {
 		}
 
 		/* If we're supposed to terminate, break out of our continuous loop. */
-		if (worker->terminate) break;
+		if (worker->terminate) {
+			pthread_mutex_unlock(&worker->workqueue->jobs_mutex);
+			break;
+		}
 
 		job = worker->workqueue->waiting_jobs;
 		if (job != NULL) {

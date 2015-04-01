@@ -1,6 +1,6 @@
 /**
  * Multithreaded, libevent-based socket server.
- * Copyright (c) 2012 Ronald Bennett Cemer
+ * Copyright (c) 2012-2015 Ronald Bennett Cemer
  * This software is licensed under the BSD license.
  * See the accompanying LICENSE.txt for details.
  *
