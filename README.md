@@ -1,3 +1,5 @@
+# libevent-thread
+
 Multithreaded, libevent-based socket server.
 
 Copyright (c) 2012 Ronald Bennett Cemer
@@ -26,8 +28,6 @@ In theory, for maximum performance, the number of worker threads should be set t
 Also note that the server includes a multithreaded work queue implementation, which can be re-used for other purposes.
 
 Since the code is BSD licensed, you are free to use the source code however you wish, either in whole or in part.
-
-
 
 Some inspiration and coding ideas came from echoserver and cliserver, both of which are single-threaded, libevent-based servers.
 
